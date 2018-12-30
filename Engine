@@ -1,12 +1,7 @@
 /*
- * Load images into atlas so it can be drawn using `atlas.drawSpirte()`
+ * Image loder made by Rio6
  *
- * Use imgloader.addImage(name, url) to add images you want to load
- * Use imgloader.combineImages() after adding all the images
- * Now you can use atlas.drawSpirte(name, pos, size, rot, color) to draw the image
- * Image loder made by R26
- *
- *To note this is still in the working
+ * To note this is still in the working
  *
  */
  
