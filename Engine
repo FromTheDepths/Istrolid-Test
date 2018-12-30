@@ -5,8 +5,12 @@
  * Use imgloader.combineImages() after adding all the images
  * Now you can use atlas.drawSpirte(name, pos, size, rot, color) to draw the image
  * Image loder made by R26
+ *
+ *To note this is still in the working
+ *
  */
-var imgloader = {
+ 
+ var imgloader = {
 
     resizeFactor: 2,
     newAtlases: [],
