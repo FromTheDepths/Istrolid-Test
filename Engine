@@ -1,0 +1,109 @@
+/*
+ * Load images into atlas so it can be drawn using `atlas.drawSpirte()`
+ *
+ * Use imgloader.addImage(name, url) to add images you want to load
+ * Use imgloader.combineImages() after adding all the images
+ * Now you can use atlas.drawSpirte(name, pos, size, rot, color) to draw the image
+ * Image loder made by R26
+ */
+var imgloader = {
+
+    resizeFactor: 2,
+    newAtlases: [],
+    loading: 0,
+
+    addImage(name, src) {
+        var img = new Image();
+        img.onload = function() {
+            imgloader.newAtlases.push({
+                name: name,
+                img: img
+            });
+            imgloader.loading--;
+        };
+        img.onerror = function(e) {
+            console.log("Could not load image", e);
+            imgloader.loading--;
+        };
+        img.src = src;
+
+        imgloader.loading++;
+    },
+
+    combineImages: function() {
+        if(imgloader.loading > 0) {
+            setTimeout(imgloader.combineImages, 50);
+            return;
+        }
+
+        console.log("Adding images to atlas");
+
+        var canvas = document.createElement('canvas');
+        var ctx = canvas.getContext('2d');
+
+        var newSize = imgloader.origAtlas.size * imgloader.resizeFactor;
+        canvas.width = canvas.height = newSize;
+
+        for(let i in imgloader.origAtlas.mappings) {
+            for(let j = 0; j < 4; j++) {
+                atlas.mappings[i].uv[j] = imgloader.origAtlas.mappings[i].uv[j] / imgloader.resizeFactor;
+            }
+        }
+
+        ctx.drawImage(imgloader.origAtlasImg, 0, canvas.height - imgloader.origAtlas.size);
+
+        let x = 0;
+        let y = 0;
+        let maxH = 0;
+        for(let a of imgloader.newAtlases) {
+            if(x + a.img.width > newSize && maxH > 0) {
+                x = 0;
+                y += maxH;
+                maxH = 0;
+            }
+            ctx.drawImage(a.img, x, y);
+            atlas.mappings[a.name] = {};
+            atlas.mappings[a.name].uv = [
+                x / newSize,
+                1 - y / newSize,
+                (x + a.img.width) / newSize,
+                1 - (y + a.img.height) / newSize
+            ];
+            x += a.img.width;
+            maxH = Math.max(a.img.height, maxH);
+        }
+
+        atlas.src = canvas.toDataURL("image/png");
+        baseAtlas.originalTextureSize = baseAtlas.textureSize = atlas.size = newSize;
+        baseAtlas.loadAtlas(atlas);
+    }
+}
+
+imgloader.origAtlas = Object.assign({}, atlas);
+// Copy mappings
+imgloader.origAtlas.mappings = {};
+for(let i in atlas.mappings) {
+    imgloader.origAtlas.mappings[i] = {};
+    imgloader.origAtlas.mappings[i].uv = atlas.mappings[i].uv.slice();
+}
+
+imgloader.origAtlasImg = new Image();
+imgloader.origAtlasImg.src = atlas.src;
+
+imgloader.addImage("parts/engine04longalt.png","https://ibb.co/5MGBwyh");
+imgloader.addImage("parts/red-engine04longalt.png","https://ibb.co/6wJ0dxk");
+imgloader.addImage("parts/gray-engine04longalt.png","https://ibb.co/tb1H4TQ");
+imgloader.combineImages();
+
+
+parts.Engine01.prototype.image = "engine01alt.png"; parts.Engine01.prototype.disable = parts.Engine01.prototype.hide = false; parts.Engine01.prototype.tab = "engines";
+parts.Engine02.prototype.image = "engine02alt.png"; parts.Engine02.prototype.disable = parts.Engine02.prototype.hide = false; parts.Engine02.prototype.tab = "engines";
+parts.Engine03.prototype.image = "engine03alt.png"; parts.Engine03.prototype.disable = parts.Engine03.prototype.hide = false; parts.Engine03.prototype.tab = "engines";
+parts.Engine04.prototype.image = "engine04alt.png"; parts.Engine04.prototype.disable = parts.Engine04.prototype.hide = false; parts.Engine04.prototype.tab = "engines";
+parts.Engine05.prototype.image = "engine07.png"; parts.Engine05.prototype.disable = parts.Engine05.prototype.hide = false; parts.Engine05.prototype.tab = "engines";
+parts.Engine06.prototype.image = "engine09.png"; parts.Engine06.prototype.disable = parts.Engine06.prototype.hide = false; parts.Engine06.prototype.name = "Quaterzul"; parts.Engine06.prototype.desc = "A medium thruster good for fast ships."; parts.Engine06.prototype.tab = "engines";
+parts.Engine07.prototype.image = "engine07alt.png"; parts.Engine07.prototype.disable = parts.Engine07.prototype.hide = false; parts.Engine07.prototype.tab = "engines";
+parts.Engine08.prototype.image = "engine08alt.png"; parts.Engine08.prototype.disable = parts.Engine08.prototype.hide = false; parts.Engine08.prototype.tab = "engines";
+parts.Engine09.prototype.image = "engine09alt.png"; parts.Engine09.prototype.disable = parts.Engine09.prototype.hide = false; parts.Engine09.prototype.tab = "engines";
+parts.Engine043Long.prototype.image = "engine04longalt.png"; parts.Engine043Long.prototype.disable = parts.Engine043Long.prototype.hide = false; parts.Engine043Long.prototype.tab = "engines";
+parts.Engine03Long.prototype.image = "engine04longalt.png"; parts.Engine03Long.prototype.disable = parts.Engine03Long.prototype.hide = false; parts.Engine03Long.prototype.tab = "engines";
