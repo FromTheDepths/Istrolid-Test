@@ -1,0 +1,105 @@
+var myTheme = myTheme || {};
+
+// Function to hook
+myTheme.hooks = myTheme.hooks || {
+    process: Interpolator.prototype.process,
+    drawSpirte: Atlas.prototype.drawSpirte
+};
+
+Atlas.prototype.drawSpirte = function(src, pos, size, rot, color, z) {
+
+    var caller = arguments.callee.caller;
+
+    if(!myTheme.ignoreFns.includes(caller)) {
+        var alpha = color ? color[3] : null;
+        var colorChanged = true;
+
+        if(caller === types.SpawnPoint.prototype.draw ||
+            caller === types.CommandPoint.prototype.draw) {
+
+            if(simpleEquals(color, [20, 20, 20, 255]))
+                color = myTheme.theme.betaColor;
+            else
+                color = myTheme.theme.alphaColor;
+        }
+        
+        else if((caller === types.ArtilleryBullet.prototype.draw ||
+            caller === types.Bomb.prototype.draw) &&
+            (src === "img/point02.png" || src === "img/fire02.png")) {
+            color = myTheme.theme.aoeColor;
+        }
+
+        else if(src === "img/arrow01.png" || src === "img/arrow02.png")
+            color = myTheme.theme.arrowColor;
+
+        else if(myTheme.bulletImages.includes(src))
+            color = myTheme.theme.bulletColor;
+
+        else if(myTheme.partImages.includes(src))
+            color = myTheme.theme.partColor;
+
+        else
+            colorChanged = false;
+
+        if(colorChanged)
+            color[3] = alpha;
+    }
+
+    return myTheme.hooks.drawSpirte.call(this, src, pos, size, rot, color, z);
+}
+
+// Change black images to white so color can be added to it
+myTheme.invertImage = function(img, srcs) {
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+
+    canvas.width = img.width;
+    canvas.height = img.height;
+
+    ctx.drawImage(img, 0, 0);
+
+    for(var src of srcs) {
+        var x, y, w, h;
+        var mapping = atlas.mappings[src];
+
+        if(!mapping) {
+            console.error("not in mapping", src);
+            return;
+        }
+
+        var uv = mapping.uv;
+
+        x = img.width * uv[0];
+        y = img.height - img.height * uv[1];
+        w = img.width * uv[2] - x;
+        h = img.height - img.height * uv[3] - y;
+
+        var imageData = ctx.getImageData(x, y, w, h);
+        var data = imageData.data;
+
+        for(var i = 0; i < data.length; i += 4) {
+            // red
+            data[i] = 255;
+            // green
+            data[i + 1] = 255;
+            // blue
+            data[i + 2] = 255;
+        }
+
+        ctx.putImageData(imageData, x, y);
+    }
+
+    return canvas.toDataURL("image/png");
+}
+
+// Make some sprites white on the atlas
+if(!myTheme.image) {
+    myTheme.image = new Image();
+    myTheme.image.onload = function() {
+        atlas.src = myTheme.invertImage(myTheme.image, myTheme.invImages);
+        if(baseAtlas)
+            baseAtlas.loadAtlas(atlas);
+    }
+
+    myTheme.image.src = atlas.src;
+}
