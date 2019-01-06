@@ -1,0 +1,20 @@
+var myTheme = myTheme || {};
+
+// Function to hook
+myTheme.hooks = myTheme.hooks || {
+    process: Interpolator.prototype.process,
+    drawSpirte: Atlas.prototype.drawSpirte
+};
+
+// Override functions
+Interpolator.prototype.process = function(data) {
+    var ret = myTheme.hooks.process.call(this, data);
+
+    mapping.themes[0] = {
+        spotColor: [0, 0, 0, 0],
+        fillColor: [0, 0, 0, 0],
+        rockColor: [0, 0, 0, 0]
+    };
+
+    return ret;
+}
